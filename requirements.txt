@@ -1,2 +1,5 @@
 osmnx
 pytest
+fastapi
+uvicorn
+httpx
