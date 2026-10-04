@@ -31,7 +31,11 @@ Detalhes que valem saber:
 Requer Python 3 e Node.js.
 
 ```bash
-# dependências do backend (na raiz)
+# cria e ativa o ambiente virtual (na raiz)
+python3 -m venv .venv
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
+
+# dependências do backend
 pip install -r requirements.txt
 
 # terminal 1: backend em modo mock (rodar da raiz do repositório)
