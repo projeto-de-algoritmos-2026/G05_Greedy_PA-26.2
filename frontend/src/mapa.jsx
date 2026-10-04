@@ -8,20 +8,30 @@ import sombra from 'leaflet/dist/images/marker-shadow.png'
 // O Vite não resolve sozinho os ícones padrão do Leaflet.
 L.Icon.Default.mergeOptions({ iconUrl: icone, iconRetinaUrl: icone2x, shadowUrl: sombra })
 
-export const CORES = ['#2563eb', '#dc2626', '#16a34a', '#d97706', '#9333ea', '#0891b2', '#be185d', '#4d7c0f']
+// Cores de veículo: todas legíveis com texto escuro e distintas entre si sobre o mapa escuro.
+export const CORES = ['#3dd6c0', '#7aa7ff', '#f07ab0', '#b79cff', '#a6e22e', '#56ccf2', '#7ee2a8', '#e8c9a0']
+export const COR_LOJA = '#f4f7f5'
+export const COR_PARADA = '#ffc857'
+export const COR_ACENTO = '#ff6a3d'
+
+// ícone "fuel" do Lucide, em texto, porque o pin do Leaflet é HTML puro
+const bomba =
+  '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="3" x2="15" y1="22" y2="22"/><line x1="4" x2="14" y1="9" y2="9"/><path d="M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18"/><path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2a2 2 0 0 0 2-2V9.83a2 2 0 0 0-.59-1.42L18 5"/></svg>'
 
 export function pinColorido(cor, texto = '') {
   return L.divIcon({
     className: 'pin',
     html: `<span style="background:${cor}">${texto}</span>`,
-    iconSize: [26, 26],
-    iconAnchor: [13, 13],
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
   })
 }
 
-export function Mapa({ centro, zoom, children, altura = 420 }) {
+export const pinParada = () => pinColorido(COR_PARADA, bomba)
+
+export function Mapa({ centro, zoom, children }) {
   return (
-    <MapContainer center={centro} zoom={zoom} style={{ height: altura }} className="mapa">
+    <MapContainer center={centro} zoom={zoom} className="mapa">
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -47,7 +57,7 @@ export function Recentralizar({ centro, zoom }) {
 export function Ajustar({ pontos }) {
   const mapa = useMap()
   useEffect(() => {
-    if (pontos.length > 1) mapa.fitBounds(pontos, { padding: [30, 30] })
+    if (pontos.length > 1) mapa.fitBounds(pontos, { padding: [40, 40] })
   }, [pontos.length]) // eslint-disable-line react-hooks/exhaustive-deps
   return null
 }
