@@ -1,5 +1,6 @@
 import math
 import osmnx as ox
+from dijkstra import distancias_acumuladas
 
 ox.settings.use_cache = True
 
@@ -49,14 +50,6 @@ def haversine(a, b):
 
 def esquina_mais_proxima(coords, ponto):
     return min(coords, key=lambda n: haversine(coords[n], ponto))
-
-
-# TODO: provisória
-def distancias_acumuladas(adj, caminho):
-    acum = [0]
-    for u, v in zip(caminho, caminho[1:]):
-        acum.append(acum[-1] + min(w for x, w in adj[u] if x == v))
-    return acum
 
 
 def postos_na_rota(postos, caminho, coords, adj, raio_m=200):
