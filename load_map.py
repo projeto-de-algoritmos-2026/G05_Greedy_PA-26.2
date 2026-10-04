@@ -21,7 +21,19 @@ def converter_grafo(G):
         coords[no] = (dados["y"], dados["x"])
 
     for u,v,dados in G.edges(data=True):
-        adj[u].append((v,dados["lenght"]))
+        adj[u].append((v,dados["length"]))
 
     return adj,coords
 
+def extrair_postos(postos_gdf):
+    postos=[]
+    for _, linha in postos_gdf.iterrows():
+        ponto = linha.geometry.centroid         
+        nome = linha.get("name")                 
+        if not isinstance(nome, str):          
+            nome = "Posto sem nome"
+        postos.append((nome, (ponto.y, ponto.x))) # y = latitude, x = longitude
+    return postos
+
+adj, coords = converter_grafo(G)
+postos = extrair_postos(postos_gdf)
