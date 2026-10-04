@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
+import { Check, FlaskConical, LayoutDashboard, Package, Route, Store, Truck } from 'lucide-react'
 import { api } from './api'
+import { Aviso } from './ui'
 import Dashboard from './telas/Dashboard'
 import Loja from './telas/Loja'
 import Veiculos from './telas/Veiculos'
@@ -7,12 +9,14 @@ import Entregas from './telas/Entregas'
 import Resultado from './telas/Resultado'
 
 const ABAS = [
-  ['dashboard', 'Resumo'],
-  ['loja', 'Loja'],
-  ['veiculos', 'Veículos'],
-  ['entregas', 'Entregas'],
-  ['resultado', 'Resultado'],
+  ['dashboard', 'Resumo', LayoutDashboard],
+  ['loja', 'Loja', Store],
+  ['veiculos', 'Veículos', Truck],
+  ['entregas', 'Entregas', Package],
+  ['resultado', 'Resultado', Route],
 ]
+
+const MAPA_ROTULO = { pronto: 'mapa pronto', carregando: 'baixando mapa', erro: 'mapa com erro' }
 
 const espera = (ms) => new Promise((r) => setTimeout(r, ms))
 
@@ -73,34 +77,98 @@ export default function App() {
   }
 
   const props = { estado, aoMudar, irPara: setAba }
+  const pode = Boolean(estado?.loja && estado?.veiculos && estado?.entregas.length > 0)
+  const feito = {
+    loja: Boolean(estado?.loja),
+    veiculos: Boolean(estado?.veiculos),
+    entregas: estado?.entregas.length > 0,
+    resultado: Boolean(resultado),
+  }
+  const estadoMapa = estado?.loja ? estado.mapa.estado : null
 
   return (
-    <div className="app">
-      <header>
-        <h1>Sistema de Entregas</h1>
-      </header>
-      {estado?.modo_mock && <div className="demo">Modo de demonstração: o resultado é falso, nenhum mapa é baixado.</div>}
-      {erroServidor && <div className="erro">{erroServidor}</div>}
-      <nav>
-        {ABAS.map(([id, nome]) => (
-          <button key={id} className={aba === id ? 'ativa' : ''} onClick={() => setAba(id)}>
+    <div className="shell">
+      <aside className="side">
+        <div className="brand">
+          <span className="brand-mark">
+            <Route size={20} strokeWidth={2.6} aria-hidden />
+          </span>
+          <div>
+            <div className="brand-name">Despacho</div>
+            <div className="brand-sub">entregas · rotas</div>
+          </div>
+        </div>
+        <div>
+          <div className="nav-label">Fluxo</div>
+          <nav className="nav" aria-label="Etapas">
+            {ABAS.map(([id, nome, Icone]) => (
+              <button key={id} aria-current={aba === id ? 'page' : undefined} onClick={() => setAba(id)}>
+                <Icone size={18} aria-hidden />
+                <span className="n-name">{nome}</span>
+                {feito[id] && (
+                  <span className="n-state ok" title="Etapa concluída">
+                    <Check size={12} strokeWidth={3} aria-label="concluída" />
+                  </span>
+                )}
+              </button>
+            ))}
+          </nav>
+        </div>
+        <div className="side-foot">
+          {estadoMapa && (
+            <span className={`chip ${estadoMapa}`}>
+              <i />
+              {MAPA_ROTULO[estadoMapa]}
+            </span>
+          )}
+          <button className="btn primary block" disabled={!pode || calculando} onClick={calcular}>
+            {calculando ? 'Calculando…' : 'Calcular despacho'}
+          </button>
+        </div>
+      </aside>
+
+      <div className="topbar">
+        <div className="brand">
+          <span className="brand-mark" style={{ width: 30, height: 30 }}>
+            <Route size={16} strokeWidth={2.6} aria-hidden />
+          </span>
+          <div className="brand-name">Despacho</div>
+        </div>
+        {estadoMapa && (
+          <span className={`chip ${estadoMapa}`}>
+            <i />
+            {MAPA_ROTULO[estadoMapa]}
+          </span>
+        )}
+      </div>
+
+      <main className="main">
+        <div className="main-in">
+          {estado?.modo_mock && (
+            <div className="callout demo">
+              <FlaskConical size={14} aria-hidden />
+              <div>MODO DEMONSTRAÇÃO · resultado simulado, nenhum mapa é baixado</div>
+            </div>
+          )}
+          {erroServidor && <Aviso tipo="err">{erroServidor}</Aviso>}
+          {estado && aba === 'dashboard' && <Dashboard {...props} calcular={calcular} calculando={calculando} />}
+          {estado && aba === 'loja' && <Loja {...props} />}
+          {estado && aba === 'veiculos' && <Veiculos {...props} />}
+          {estado && aba === 'entregas' && <Entregas {...props} />}
+          {estado && aba === 'resultado' && (
+            <Resultado estado={estado} resultado={resultado} calculando={calculando} erro={erroCalculo} calcular={calcular} />
+          )}
+        </div>
+      </main>
+
+      <nav className="tabbar" aria-label="Etapas">
+        {ABAS.map(([id, nome, Icone]) => (
+          <button key={id} aria-current={aba === id ? 'page' : undefined} onClick={() => setAba(id)}>
+            <Icone size={20} aria-hidden />
             {nome}
           </button>
         ))}
       </nav>
-      {estado && aba === 'dashboard' && <Dashboard {...props} calcular={calcular} calculando={calculando} />}
-      {estado && aba === 'loja' && <Loja {...props} />}
-      {estado && aba === 'veiculos' && <Veiculos {...props} />}
-      {estado && aba === 'entregas' && <Entregas {...props} />}
-      {estado && aba === 'resultado' && (
-        <Resultado
-          estado={estado}
-          resultado={resultado}
-          calculando={calculando}
-          erro={erroCalculo}
-          calcular={calcular}
-        />
-      )}
     </div>
   )
 }

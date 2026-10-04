@@ -50,6 +50,20 @@ class GerenciadorMapa:
 
 
 def _carregar_real(centro, raio):
+    """Tenta cada servidor do Overpass até um responder."""
+    import osmnx as ox
+    ox.settings.requests_timeout = config.OVERPASS_TIMEOUT_S
+    ultimo_erro = None
+    for url in config.OVERPASS_URLS:
+        ox.settings.overpass_url = url
+        try:
+            return _baixar(centro, raio)
+        except Exception as erro:
+            ultimo_erro = erro
+    raise ultimo_erro
+
+
+def _baixar(centro, raio):
     from . import algoritmos
     alg = algoritmos.reais()
     try:

@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { Circle, Marker } from 'react-leaflet'
+import { ArrowRight, LocateFixed, Save } from 'lucide-react'
 import { api } from '../api'
-import { AoClicar, Mapa, Recentralizar } from '../mapa'
+import { AoClicar, COR_ACENTO, Mapa, Recentralizar } from '../mapa'
+import { Aviso, Cabecalho, Spinner } from '../ui'
 
 const BRASIL = [-14.2, -51.9]
 
@@ -39,46 +41,66 @@ export default function Loja({ estado, aoMudar, irPara }) {
   }
 
   return (
-    <div className="cartao">
-      <h2>Cadastrar loja</h2>
-      <p className="suave">Clique no mapa para marcar a posição da loja. Você pode arrastar o pin.</p>
-      <form onSubmit={salvar}>
-        <label htmlFor="nome">Nome da loja</label>
-        <input id="nome" value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Ex.: Pizzaria Central" />
-        <button type="button" className="link" style={{ color: 'var(--azul)' }} onClick={usarLocalizacao}>
-          Usar minha localização
-        </button>
-        <Mapa centro={pos ?? BRASIL} zoom={pos ? 13 : 4}>
-          <AoClicar onClick={setPos} />
-          <Recentralizar centro={pos} zoom={13} />
-          {pos && (
-            <Marker
-              position={pos}
-              draggable
-              eventHandlers={{ dragend: (e) => setPos([e.target.getLatLng().lat, e.target.getLatLng().lng]) }}
-            />
+    <>
+      <Cabecalho passo="01 / Loja" titulo="Onde fica a loja?" texto="Clique no mapa para posicionar o ponto de saída. Você pode arrastar o pin para ajustar." />
+      <div className="split rise">
+        <form className="panel panel-pad form col" onSubmit={salvar}>
+          <div className="field">
+            <label htmlFor="nome">Nome da loja</label>
+            <input id="nome" value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Ex.: Pizzaria Central" autoComplete="off" />
+          </div>
+          <div>
+            <div className="lbl">Posição</div>
+            <div className="mono" style={{ fontSize: '.85rem', marginBottom: 8 }}>
+              {pos ? `${pos[0].toFixed(5)}, ${pos[1].toFixed(5)}` : <span className="muted">nenhum ponto marcado</span>}
+            </div>
+            <button type="button" className="btn sm" onClick={usarLocalizacao}>
+              <LocateFixed size={14} /> Usar minha localização
+            </button>
+          </div>
+          {erro && <Aviso tipo="err">{erro}</Aviso>}
+          {aviso && <Aviso tipo="warn">{aviso}</Aviso>}
+          {salva && estado.mapa.estado === 'carregando' && (
+            <Aviso tipo="info">
+              <span style={{ display: 'inline-flex', gap: 8, alignItems: 'center' }}>
+                <Spinner /> Baixando o mapa da região em segundo plano…
+              </span>
+            </Aviso>
           )}
-          {salva && <Circle center={[salva.lat, salva.lon]} radius={estado.raio_m} pathOptions={{ color: '#2563eb', fillOpacity: 0.05 }} />}
-        </Mapa>
-        {erro && <div className="erro">{erro}</div>}
-        {aviso && <div className="aviso">{aviso}</div>}
-        {salva && estado.mapa.estado === 'carregando' && (
-          <p className="suave">
-            <span className="spinner" />
-            Baixando o mapa da região em segundo plano...
-          </p>
-        )}
-        {salva && estado.mapa.estado === 'pronto' && <p className="suave">Mapa carregado. Área de cobertura: {estado.raio_m / 1000} km.</p>}
-        {salva && estado.mapa.estado === 'erro' && <div className="erro">{estado.mapa.mensagem}</div>}
-        <button className="primario" disabled={!nome.trim() || !pos || salvando}>
-          {salvando ? 'Salvando...' : 'Salvar loja'}
-        </button>{' '}
-        {salva && (
-          <button type="button" className="primario" onClick={() => irPara('veiculos')}>
-            Próximo: veículos
-          </button>
-        )}
-      </form>
-    </div>
+          {salva && estado.mapa.estado === 'pronto' && (
+            <p className="muted" style={{ fontSize: '.85rem' }}>
+              Mapa carregado · cobertura de <span className="mono">{estado.raio_m / 1000} km</span>.
+            </p>
+          )}
+          {salva && estado.mapa.estado === 'erro' && <Aviso tipo="err">{estado.mapa.mensagem}</Aviso>}
+          <div className="actions">
+            <button className="btn primary" disabled={!nome.trim() || !pos || salvando}>
+              <Save size={16} />
+              {salvando ? 'Salvando…' : 'Salvar loja'}
+            </button>
+            {salva && (
+              <button type="button" className="btn" onClick={() => irPara('veiculos')}>
+                Ir para veículos <ArrowRight size={16} className="go" />
+              </button>
+            )}
+          </div>
+        </form>
+
+        <div className="sticky">
+          <Mapa centro={pos ?? BRASIL} zoom={pos ? 13 : 4}>
+            <AoClicar onClick={setPos} />
+            <Recentralizar centro={pos} zoom={13} />
+            {pos && (
+              <Marker
+                position={pos}
+                draggable
+                eventHandlers={{ dragend: (e) => setPos([e.target.getLatLng().lat, e.target.getLatLng().lng]) }}
+              />
+            )}
+            {salva && <Circle center={[salva.lat, salva.lon]} radius={estado.raio_m} pathOptions={{ color: COR_ACENTO, weight: 1.5, dashArray: '6 6', fillOpacity: 0.06 }} />}
+          </Mapa>
+        </div>
+      </div>
+    </>
   )
 }

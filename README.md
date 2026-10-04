@@ -34,8 +34,8 @@ Requer Python 3 e Node.js.
 # dependências do backend (na raiz)
 pip install -r requirements.txt
 
-# terminal 1: backend (rodar da raiz do repositório)
-uvicorn backend.api:app --reload
+# terminal 1: backend em modo mock (rodar da raiz do repositório)
+MODO_MOCK=1 uvicorn backend.api:app --reload
 
 # terminal 2: frontend
 cd frontend
@@ -43,7 +43,26 @@ npm install
 npm run dev        # abre em http://localhost:5173
 ```
 
-Para desenvolver a interface sem baixar o mapa, rode o backend com `MODO_MOCK=1 uvicorn backend.api:app --reload` (resposta falsa, deve ser removida na integração).
+Na tela, posicione a loja perto da **Rodoviária do Plano Piloto (Brasília-DF)**, em torno de `-15.7939, -47.8828`, e marque as entregas dentro do círculo.
+
+### Por que o modo mock
+
+O mapa de ruas e os postos vêm do Overpass, um servidor público do OpenStreetMap que costuma ficar sobrecarregado e responder com timeout (`Read timed out`), o que torna a demonstração imprevisível. No modo mock o backend não baixa nada:
+
+- **Real:** os postos são os de verdade do OpenStreetMap num raio de 5 km da Rodoviária (gravados em `backend/mock_calcular.py`), e o resultado usa os mesmos algoritmos gulosos do projeto: `alocar_motos` (Interval Partitioning) para os veículos e `recomendar_paradas` (Selecting Breakpoints) para onde abastecer.
+- **Simulado:** as ruas. A rota é uma linha reta da loja ao cliente e a distância é essa reta vezes 1,3, em vez do Dijkstra no grafo de ruas. Por isso só aparecem como paradas os postos a até 200 m dessa reta.
+
+Só funciona com a loja perto da Rodoviária, pois é a única região com postos gravados.
+
+### Modo real (mapa baixado)
+
+Sem o `MODO_MOCK`, o backend baixa o mapa da região da loja e roda tudo de verdade, incluindo o Dijkstra nas ruas:
+
+```bash
+uvicorn backend.api:app --reload
+```
+
+O download pode demorar e falhar por timeout do Overpass. O backend tenta alguns servidores em sequência (`OVERPASS_URLS` em `backend/config.py`).
 
 ### Testes
 
