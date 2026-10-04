@@ -13,19 +13,50 @@ Sistema de entregas desenvolvido para a disciplina de Projeto de Algoritmos (202
 
 Os testes ficam em `algoritmo/test_*.py` e `algoritmo/tests/`.
 
+## Interface web
+
+Uma loja marca no mapa onde fica, quantos veículos tem e as entregas do dia. O sistema responde: o menor caminho até cada cliente (Dijkstra), quantos veículos são necessários e qual leva cada entrega (Interval Partitioning) e onde abastecer em cada rota (Selecting Breakpoints).
+
+- `backend/`: API em FastAPI. `calculo.py` é o "colador" que chama os módulos de `algoritmo/` sem alterá-los.
+- `frontend/`: React (Vite) com mapa Leaflet/OpenStreetMap, sem chave de API.
+
+Detalhes que valem saber:
+- Raio de cobertura fixo (5 km), velocidade (30 km/h) e tempo no cliente (5 min) ficam em `backend/config.py`.
+- O mapa é baixado em segundo plano assim que a loja é salva (pode levar alguns segundos).
+- A volta é feita pelo mesmo caminho da ida, mesmo que haja ruas de mão única.
+- A autonomia informada vale para cada entrega, que sai do estado atual dos veículos.
+
 ## Como rodar
 
-Requer Python 3.
+Requer Python 3 e Node.js.
 
 ```bash
+# dependências do backend (na raiz)
 pip install -r requirements.txt
 
-# testes
+# terminal 1: backend (rodar da raiz do repositório)
+uvicorn backend.api:app --reload
+
+# terminal 2: frontend
+cd frontend
+npm install
+npm run dev        # abre em http://localhost:5173
+```
+
+Para desenvolver a interface sem baixar o mapa, rode o backend com `MODO_MOCK=1 uvicorn backend.api:app --reload` (resposta falsa, deve ser removida na integração).
+
+### Testes
+
+```bash
+python -m pytest            # algoritmos e backend, sem rede
+```
+
+### Só os algoritmos
+
+```bash
 cd algoritmo
 python -m pytest
-
-# baixa o mapa e mostra quantas esquinas e postos foram encontrados
-python load_map.py
+python load_map.py   # baixa o mapa e mostra quantas esquinas e postos foram encontrados
 ```
 
 O mapa é baixado na primeira execução e fica em cache na pasta `cache/`.
