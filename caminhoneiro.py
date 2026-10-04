@@ -30,3 +30,19 @@ def recomendar_paradas(postos, total, alcance_atual, alcance_cheio):
         restantes = [p for p in restantes if p[0] > posicao]
 
     return paradas
+
+
+def postos_ida_e_volta(postos, total):
+    """Espelha os postos da ida para montar a rota de ida e volta.
+
+    postos: lista ordenada de (posicao_em_metros, nome) na ida, com
+    posicao entre 0 e total.
+    total: comprimento da rota de ida em metros.
+
+    Cada posto da ida aparece também na volta, na posicao 2*total - p.
+    Retorna (postos_completos, total_ida_e_volta), com postos_completos
+    ordenada pela posicao e total_ida_e_volta = 2*total.
+    """
+    postos_volta = [(2 * total - posicao, nome) for posicao, nome in postos]
+    completos = sorted(list(postos) + postos_volta, key=lambda p: p[0])
+    return completos, 2 * total
