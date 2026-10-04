@@ -1,4 +1,5 @@
 import osmnx as ox
+import math
 ox.settings.log_console = True
 ox.settings.use_cache = True
 
@@ -34,6 +35,17 @@ def extrair_postos(postos_gdf):
             nome = "Posto sem nome"
         postos.append((nome, (ponto.y, ponto.x))) # y = latitude, x = longitude
     return postos
+
+def haversine(a, b):
+    lat1, lon1 = map(math.radians, a)     
+    lat2, lon2 = map(math.radians, b)
+
+    dlat = lat2 - lat1
+    dlon = lon2 - lon1
+
+    h = math.sin(dlat / 2) ** 2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2) ** 2
+    return 2 * 6371000 * math.asin(math.sqrt(h))   # 6371000 = raio da Terra em metros
+
 
 adj, coords = converter_grafo(G)
 postos = extrair_postos(postos_gdf)
