@@ -2,6 +2,14 @@
 
 Sistema de entregas desenvolvido para a disciplina de Projeto de Algoritmos (2026.2). O projeto usa o mapa real de uma cidade (OpenStreetMap) e aplica algoritmos gulosos para planejar rotas, paradas para abastecer e a alocação de motos.
 
+## Vídeo de apresentação
+
+[Assista no YouTube](https://youtu.be/PAsmIGr12Jo)
+
+## Capturas de tela
+
+![Tela de resultado do despacho](docs/screenshots/resultado.png)
+
 ## Módulos (`algoritmo/`)
 
 | Arquivo | O que faz |
